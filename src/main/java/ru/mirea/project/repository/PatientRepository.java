@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.ArrayList;
 import  java.util.Optional;
 
-public class PatientRepository implements CrudRepository<Patient, Long> {
+/*public class PatientRepository implements CrudRepository<Patient, Long> {
 
     @Override
     public Patient save(Patient patient) {
@@ -38,3 +38,4 @@ public class PatientRepository implements CrudRepository<Patient, Long> {
         }
     }
 }
+*/
