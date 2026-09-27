@@ -3,6 +3,12 @@ package ru.mirea.project.model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Getter
+@Setter
 public class Procedure {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
@@ -27,54 +33,6 @@ public class Procedure {
         this.name = name;
         this.description = description;
         this.procedureDate = procedureDate;
-        this.status = status;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getPatientId() {
-        return patientId;
-    }
-
-    public void setPatientId(Long patientId) {
-        this.patientId = patientId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getProcedureDate() {
-        return procedureDate;
-    }
-
-    public void setProcedureDate(LocalDateTime procedureDate) {
-        this.procedureDate = procedureDate;
-    }
-
-    public ProcedureStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ProcedureStatus status) {
         this.status = status;
     }
 
