@@ -1,110 +1,101 @@
 package ru.mirea.project.repository;
 
 import ru.mirea.project.model.Patient;
+import ru.mirea.project.model.PatientStatus;
 import ru.mirea.project.util.DatabaseManager;
 
-import java.sql.*;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import  java.util.Optional;
+import java.util.List;
+import java.util.Optional;
 
 public class PatientRepository implements CrudRepository<Patient, Long> {
-
     @Override
     public Patient save(Patient patient) {
-        String sql = "INSERT INTO patients (first_name, last_name, phone, email, birth_date)" +
-                "VALUES (?, ?, ?, ?, ?)";
-
-        try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);) {
-
-            stmt.setString(1, patient.getFirstName());
-            stmt.setString(2, patient.getLastName());
-            stmt.setString(3, patient.getPhone());
-            stmt.setString(4, patient.getEmail());
-            stmt.setDate(5, patient.getBirthDate() != null ? Date.valueOf(patient.getBirthDate()) : null);
-
-            stmt.executeUpdate();
-
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()){
-                    patient.setId(generatedKeys.getLong(1));
+        String sql = "INSERT INTO patients (first_name, last_name, phone, email, birth_date, status) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, patient.getFirstName());
+            statement.setString(2, patient.getLastName());
+            statement.setString(3, patient.getPhone());
+            statement.setString(4, patient.getEmail());
+            statement.setDate(5, Date.valueOf(patient.getBirthDate()));
+            statement.setString(6, patient.getStatus().name());
+            statement.executeUpdate();
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                if (keys.next()) {
+                    patient.setId(keys.getLong(1));
                 }
             }
             return patient;
-
         } catch (SQLException ex) {
-            throw new RuntimeException("Ошибка сохранения пациента в БД: " + ex.getMessage(), ex);
+            throw new RuntimeException("Ошибка сохранения пациента: " + ex.getMessage(), ex);
         }
     }
 
     @Override
     public Optional<Patient> findById(Long id) {
-        String sql = "SELECT id, first_name, last_name, phone, email, birth_date FROM patient WHERE id = ?";
-
-        try(Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)){
-
-            stmt.setLong(1, id);
-
-            try (ResultSet rs = stmt.executeQuery()){
-                if (rs.next()) {
-                    return Optional.of(mapResultSetToPatient(rs));
+        String sql = "SELECT id, first_name, last_name, phone, email, birth_date, status FROM patients WHERE id = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(map(resultSet));
                 }
             }
         } catch (SQLException ex) {
-            throw new RuntimeException("Ошибка поиска пациента по ID: " + ex.getMessage(), ex);
+            throw new RuntimeException("Ошибка поиска пациента: " + ex.getMessage(), ex);
         }
         return Optional.empty();
     }
 
     @Override
     public List<Patient> findAll() {
-        String sql = "SELECT id, first_name, last_name, phone, email, birth_date FROM patients ORDER BY id";
+        String sql = "SELECT id, first_name, last_name, phone, email, birth_date, status FROM patients ORDER BY id";
         List<Patient> patients = new ArrayList<>();
-
-         try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery()) {
-
-             while (rs.next()){
-                patients.add(mapResultSetToPatient(rs));
-             }
-         } catch (SQLException ex) {
-            throw new RuntimeException("Ошибка получения списка пациентов: " + ex.getMessage(), ex);
-         }
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                patients.add(map(resultSet));
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Ошибка получения пациентов: " + ex.getMessage(), ex);
+        }
         return patients;
     }
 
     @Override
     public void update(Patient patient) {
-        String sql = "UPDATE patients SET first_name = ?, last_name = ?, phone = ?, email = ?, birth_date = ?" +
-                "WHERE id = ?";
-
-        try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, patient.getFirstName());
-            stmt.setString(2, patient.getLastName());
-            stmt.setString(3, patient.getPhone());
-            stmt.setString(4, patient.getEmail());
-            stmt.setDate(5, patient.getBirthDate() != null ? Date.valueOf(patient.getBirthDate()) : null);
-            stmt.setLong(6, patient.getId());
-
-            stmt.executeUpdate();
+        String sql = "UPDATE patients SET first_name = ?, last_name = ?, phone = ?, email = ?, birth_date = ?, status = ? WHERE id = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, patient.getFirstName());
+            statement.setString(2, patient.getLastName());
+            statement.setString(3, patient.getPhone());
+            statement.setString(4, patient.getEmail());
+            statement.setDate(5, Date.valueOf(patient.getBirthDate()));
+            statement.setString(6, patient.getStatus().name());
+            statement.setLong(7, patient.getId());
+            statement.executeUpdate();
         } catch (SQLException ex) {
-            throw new RuntimeException("Ошибка обновления ланных пациента: " + ex.getMessage(), ex);
+            throw new RuntimeException("Ошибка обновления пациента: " + ex.getMessage(), ex);
         }
     }
 
     @Override
-    public boolean deleteById(Long id){
+    public boolean deleteById(Long id) {
         String sql = "DELETE FROM patients WHERE id = ?";
-
-        try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, id);
-
-            return stmt.executeUpdate() > 0;
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            return statement.executeUpdate() > 0;
         } catch (SQLException ex) {
             throw new RuntimeException("Ошибка удаления пациента: " + ex.getMessage(), ex);
         }
@@ -112,71 +103,95 @@ public class PatientRepository implements CrudRepository<Patient, Long> {
 
     public boolean existsById(Long id) {
         String sql = "SELECT 1 FROM patients WHERE id = ?";
-         try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)){
-            stmt.setLong(1, id);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
             }
-         } catch (SQLException ex) {
-             throw new RuntimeException("Ошибка проверки существования пациента: " + ex.getMessage(), ex);
-         }
-    }
-
-    public boolean existsByPhone(String phone, Long excludeId){
-        String sql = excludeId == null ?
-                "SELECT 1 FROM patients WHERE phone = ?" :
-                "SELECT 1 FROM patients WHERE phone = ? AND id <> ?";
-
-        try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)){
-
-            stmt.setString(1, phone);
-
-            if (excludeId != null){
-                stmt.setLong(2, excludeId);
-            }
-
-            try (ResultSet rs = stmt.executeQuery()){
-                return rs.next();
-            }
-        } catch (SQLException ex){
-            throw new RuntimeException("Ошибка проверки уникальности телефона: " + ex.getMessage(), ex);
+        } catch (SQLException ex) {
+            throw new RuntimeException("Ошибка проверки пациента: " + ex.getMessage(), ex);
         }
     }
 
-    public List<Patient> searchNyName(String query){
-        String sql = "SELECT first_name, last_name, phone, email, birth_date FROM patients" +
-                "WHERE LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? ORDER BY id";
+    public boolean existsByPhoneOrEmail(String phone, String email, Long excludedId) {
+        String sql = excludedId == null
+                ? "SELECT 1 FROM patients WHERE phone = ? OR email = ?"
+                : "SELECT 1 FROM patients WHERE (phone = ? OR email = ?) AND id <> ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, phone);
+            statement.setString(2, email);
+            if (excludedId != null) {
+                statement.setLong(3, excludedId);
+            }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Ошибка проверки уникальности пациента: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<Patient> findByStatus(PatientStatus status) {
+        String sql = "SELECT id, first_name, last_name, phone, email, birth_date, status FROM patients WHERE status = ? ORDER BY last_name, first_name";
+        return findByOneString(sql, status.name());
+    }
+
+    public List<Patient> searchByName(String query) {
+        String sql = "SELECT id, first_name, last_name, phone, email, birth_date, status FROM patients WHERE LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? ORDER BY last_name, first_name";
         List<Patient> patients = new ArrayList<>();
-
-        try (Connection conn = DatabaseManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)){
-            String wildcard = "%" + query + "%";
-            stmt.setString(1, wildcard);
-            stmt.setString(2, wildcard);
-
-            try (ResultSet rs = stmt.executeQuery()){
-                while (rs.next()){
-                    patients.add(mapResultSetToPatient(rs));
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            String wildcard = "%" + query.toLowerCase() + "%";
+            statement.setString(1, wildcard);
+            statement.setString(2, wildcard);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    patients.add(map(resultSet));
                 }
             }
         } catch (SQLException ex) {
-            throw new RuntimeException("Ошибка поиска пациента: " + ex.getMessage(), ex);
+            throw new RuntimeException("Ошибка поиска пациента по имени: " + ex.getMessage(), ex);
         }
-        return  patients;
+        return patients;
     }
 
-    private Patient mapResultSetToPatient(ResultSet rs) throws SQLException {
-        Date birthDateSql = rs.getDate("birth_date");
-        return new Patient(
-                rs.getLong("id"),
-                rs.getString("first_name"),
-                rs.getString("last_name"),
-                rs.getString("phone"),
-                rs.getString("email"),
-                birthDateSql != null ? birthDateSql.toLocalDate() : null
-        );
+    public long countByStatus(PatientStatus status) {
+        String sql = "SELECT COUNT(*) FROM patients WHERE status = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, status.name());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getLong(1);
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Ошибка подсчета пациентов: " + ex.getMessage(), ex);
+        }
+    }
+
+    private List<Patient> findByOneString(String sql, String value) {
+        List<Patient> patients = new ArrayList<>();
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, value);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    patients.add(map(resultSet));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Ошибка фильтрации пациентов: " + ex.getMessage(), ex);
+        }
+        return patients;
+    }
+
+    private Patient map(ResultSet resultSet) throws SQLException {
+        Date birthDate = resultSet.getDate("birth_date");
+        return new Patient(resultSet.getLong("id"), resultSet.getString("first_name"),
+                resultSet.getString("last_name"), resultSet.getString("phone"),
+                resultSet.getString("email"), birthDate.toLocalDate(),
+                PatientStatus.valueOf(resultSet.getString("status")));
     }
 }
