@@ -35,11 +35,6 @@ public class Procedure {
         this.id = id;
     }
 
-    public Procedure(Long id, Long patientId, String name, String description,
-                     LocalDateTime procedureDate, ProcedureStatus status) {
-        this(id, patientId, null, name, description, procedureDate, status);
-    }
-
     public Long getId() {
         return id;
     }
