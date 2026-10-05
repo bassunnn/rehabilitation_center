@@ -1,14 +1,14 @@
 package ru.mirea.project.model;
 
-public enum ProcedureStatus {
-    PLANNED("Запланирована"),
-    IN_PROGRESS("Выполняется"),
-    COMPLETED("Завершена"),
-    CANCELLED("Отменена");
+public enum PlanStatus {
+    DRAFT("Черновик"),
+    ACTIVE("Активен"),
+    COMPLETED("Завершен"),
+    CANCELLED("Отменен");
 
     private final String title;
 
-    ProcedureStatus(String title) {
+    PlanStatus(String title) {
         this.title = title;
     }
 

@@ -1,14 +1,13 @@
 package ru.mirea.project.model;
 
-public enum ProcedureStatus {
-    PLANNED("Запланирована"),
-    IN_PROGRESS("Выполняется"),
-    COMPLETED("Завершена"),
-    CANCELLED("Отменена");
+public enum PatientStatus {
+    ACTIVE("Активен"),
+    INACTIVE("Неактивен"),
+    ARCHIVED("В архиве");
 
     private final String title;
 
-    ProcedureStatus(String title) {
+    PatientStatus(String title) {
         this.title = title;
     }
 
