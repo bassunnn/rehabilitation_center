@@ -8,5 +8,5 @@ public interface CrudRepository<T, ID> {
     Optional<T> findById(ID id);
     List<T> findAll();
     void update(T entity);
-    boolean deletedById(ID id);
+    boolean deleteById(ID id);
 }

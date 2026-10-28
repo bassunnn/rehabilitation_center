@@ -1,25 +1,23 @@
 package ru.mirea.project.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
-import lombok.Getter;
-import lombok.Setter;
-
-
-@Getter
-@Setter
 public class Procedure {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     private Long id;
     private Long patientId;
+    private String patientFullName;
     private String name;
     private String description;
-    private LocalDateTime procedureDate;
+    private LocalDate procedureDate;
     private ProcedureStatus status;
 
-    public Procedure(Long patientId, String name, String description, LocalDateTime procedureDate, ProcedureStatus status) {
+    public Procedure() {}
+
+    public Procedure(Long patientId, String name, String description, LocalDate procedureDate, ProcedureStatus status) {
         this.patientId = patientId;
         this.name = name;
         this.description = description;
@@ -27,7 +25,7 @@ public class Procedure {
         this.status = status;
     }
 
-    public Procedure(Long id, Long patientId, String name, String description, LocalDateTime procedureDate, ProcedureStatus status) {
+    public Procedure(Long id, Long patientId, String name, String description, LocalDate procedureDate, ProcedureStatus status) {
         this.id = id;
         this.patientId = patientId;
         this.name = name;
@@ -36,10 +34,85 @@ public class Procedure {
         this.status = status;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
+    }
+
+    public String getPatientFullName() {
+        return patientFullName;
+    }
+
+    public void setPatientFullName(String patientFullName) {
+        this.patientFullName = patientFullName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDate getProcedureDate() {
+        return procedureDate;
+    }
+
+    public void setProcedureDate(LocalDate procedureDate) {
+        this.procedureDate = procedureDate;
+    }
+
+    public ProcedureStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ProcedureStatus status) {
+        this.status = status;
+    }
+
+    public String getStatusTitle() {
+        return status != null ? status.getTitle() : "";
+    }
+
+    public String getFormattedProcedureDate() {
+        return procedureDate != null ? procedureDate.format(DATE_FORMATTER) : "";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Procedure procedure = (Procedure) o;
+        return Objects.equals(id, procedure.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
     @Override
     public String toString() {
-        String formattedDate = procedureDate != null ? procedureDate.format(FORMATTER) : "не указана";
-        return String.format("Процедура #%d [Пациент #%d] | %s | %s | Статус: %s | Описание: %s ",
-                id, patientId, name, formattedDate, status.getTitle(), description );
+        return String.format("%s (%s, %s)", name, getFormattedProcedureDate(), getStatusTitle());
     }
 }

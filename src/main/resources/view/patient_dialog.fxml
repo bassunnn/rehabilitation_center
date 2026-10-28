@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.mirea.project.controller.PatientEditDialogController"
+      spacing="16.0" prefWidth="480.0" styleClass="dialog-root">
+    <padding>
+        <Insets top="20.0" right="24.0" bottom="20.0" left="24.0"/>
+    </padding>
+
+    <Label text="Данные пациента" styleClass="dialog-header"/>
+    <Label text="Заполните обязательные поля профиля пациента" styleClass="dialog-subtitle"/>
+
+    <GridPane hgap="12.0" vgap="14.0">
+        <columnConstraints>
+            <ColumnConstraints minWidth="120.0" prefWidth="130.0"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <!-- Фамилия -->
+        <Label text="Фамилия *:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="form-label"/>
+        <TextField fx:id="lastNameField" promptText="например: Иванов" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="form-input"/>
+
+        <!-- Имя -->
+        <Label text="Имя *:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="form-label"/>
+        <TextField fx:id="firstNameField" promptText="например: Иван" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="form-input"/>
+
+        <!-- Телефон -->
+        <Label text="Телефон *:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="form-label"/>
+        <TextField fx:id="phoneField" promptText="+79991234567" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="form-input"/>
+
+        <!-- Email -->
+        <Label text="Email *:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="form-label"/>
+        <TextField fx:id="emailField" promptText="ivanov@example.com" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="form-input"/>
+
+        <!-- Дата рождения -->
+        <Label text="Дата рождения *:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="form-label"/>
+        <DatePicker fx:id="birthDatePicker" promptText="дд.мм.гггг" maxWidth="Infinity" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="form-input"/>
+    </GridPane>
+
+    <!-- Сообщение об ошибке валидации -->
+    <Label fx:id="errorLabel" styleClass="error-message" wrapText="true"/>
+
+    <!-- Кнопки управления -->
+    <HBox spacing="12.0" alignment="CENTER_RIGHT">
+        <Button text="Отмена" onAction="#handleCancel" styleClass="btn-secondary"/>
+        <Button text="Сохранить" onAction="#handleSave" defaultButton="true" styleClass="btn-primary"/>
+    </HBox>
+</VBox>
+

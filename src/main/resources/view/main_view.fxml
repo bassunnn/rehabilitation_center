@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.mirea.project.controller.MainController"
+            prefHeight="750.0" prefWidth="1100.0" styleClass="main-root">
+
+    <!-- Верхний колонтитул приложения -->
+    <top>
+        <VBox styleClass="top-banner">
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <padding>
+                    <Insets top="14.0" right="20.0" bottom="14.0" left="20.0"/>
+                </padding>
+                <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                    <Label text="Реабилитационный центр — Информационная система" styleClass="app-title"/>
+                    <Label text="Контрольная работа №2 • Настольное приложение JavaFX с подключением к PostgreSQL" styleClass="app-subtitle"/>
+                </VBox>
+                <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                    <Button text="Обновить данные" onAction="#handleRefreshAll" styleClass="btn-outline"/>
+                    <Button text="Экспорт в Excel (.xlsx)" onAction="#handleExportExcel" styleClass="btn-success"/>
+                </HBox>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Основное содержимое: Вкладки -->
+    <center>
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="custom-tab-pane">
+
+            <!-- ===================================== -->
+            <!-- ВКЛАДКА 1: ПАЦИЕНТЫ И ИХ ПРОЦЕДУРЫ   -->
+            <!-- ===================================== -->
+            <Tab text="Пациенты реабилитационного центра">
+                <VBox spacing="12.0">
+                    <padding>
+                        <Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/>
+                    </padding>
+
+                    <!-- Панель инструментов пациентов -->
+                    <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="toolbar-panel">
+                        <padding>
+                            <Insets top="8.0" right="12.0" bottom="8.0" left="12.0"/>
+                        </padding>
+                        <TextField fx:id="patientSearchField" promptText="Поиск по ФИО, телефону или email..." prefWidth="250.0" styleClass="search-field"/>
+
+                        <Separator orientation="VERTICAL"/>
+
+                        <Label text="Возраст от:" styleClass="filter-label"/>
+                        <TextField fx:id="minAgeField" promptText="0" prefWidth="48.0" styleClass="small-input"/>
+                        <Label text="до:" styleClass="filter-label"/>
+                        <TextField fx:id="maxAgeField" promptText="100" prefWidth="48.0" styleClass="small-input"/>
+                        <Button text="Фильтр" onAction="#handleApplyAgeFilter" styleClass="btn-filter"/>
+                        <Button text="Сброс" onAction="#handleResetPatientFilters" styleClass="btn-filter-reset"/>
+
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <Button text="+ Новый пациент" onAction="#handleAddPatient" styleClass="btn-primary"/>
+                        <Button text="Редактировать" onAction="#handleEditPatient" styleClass="btn-secondary"/>
+                        <Button text="Удалить" onAction="#handleDeletePatient" styleClass="btn-danger"/>
+                        <Button text="Экспорт CSV" onAction="#handleExportPatientsCsv" styleClass="btn-export"/>
+                    </HBox>
+
+                    <!-- Разделитель: верх — таблица пациентов, низ — назначенные процедуры -->
+                    <SplitPane orientation="VERTICAL" dividerPositions="0.6" VBox.vgrow="ALWAYS" styleClass="content-split-pane">
+                        <!-- Верх: Таблица пациентов -->
+                        <VBox spacing="6.0">
+                            <Label text="Список зарегистрированных пациентов (выберите строку для просмотра процедур):" styleClass="section-header"/>
+                            <TableView fx:id="patientTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+                                <columns>
+                                    <TableColumn fx:id="patientIdColumn" text="ID" prefWidth="55.0"/>
+                                    <TableColumn fx:id="patientLastNameColumn" text="Фамилия" prefWidth="130.0"/>
+                                    <TableColumn fx:id="patientFirstNameColumn" text="Имя" prefWidth="130.0"/>
+                                    <TableColumn fx:id="patientAgeColumn" text="Возраст" prefWidth="75.0"/>
+                                    <TableColumn fx:id="patientBirthDateColumn" text="Дата рождения" prefWidth="110.0"/>
+                                    <TableColumn fx:id="patientPhoneColumn" text="Телефон" prefWidth="135.0"/>
+                                    <TableColumn fx:id="patientEmailColumn" text="Email" prefWidth="190.0"/>
+                                </columns>
+                                <placeholder>
+                                    <Label text="Нет пациентов для отображения. Добавьте запись или проверьте параметры поиска."/>
+                                </placeholder>
+                            </TableView>
+                        </VBox>
+
+                        <!-- Низ: Связанные процедуры выбранного пациента -->
+                        <VBox spacing="6.0">
+                            <padding>
+                                <Insets top="8.0" right="0.0" bottom="0.0" left="0.0"/>
+                            </padding>
+                            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                <Label fx:id="selectedPatientInfoLabel" text="Выберите пациента в таблице выше для просмотра назначенных процедур" styleClass="related-header" HBox.hgrow="ALWAYS"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="+ Назначить процедуру этому пациенту" onAction="#handleAddProcedure" styleClass="btn-small-primary"/>
+                            </HBox>
+                            <TableView fx:id="patientProceduresTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+                                <columns>
+                                    <TableColumn fx:id="pProcIdColumn" text="ID" prefWidth="50.0"/>
+                                    <TableColumn fx:id="pProcNameColumn" text="Название процедуры" prefWidth="220.0"/>
+                                    <TableColumn fx:id="pProcDateColumn" text="Дата проведения" prefWidth="120.0"/>
+                                    <TableColumn fx:id="pProcStatusColumn" text="Статус" prefWidth="130.0"/>
+                                    <TableColumn fx:id="pProcDescColumn" text="Описание и назначения" prefWidth="350.0"/>
+                                </columns>
+                                <placeholder>
+                                    <Label text="У выбранного пациента нет назначенных процедур."/>
+                                </placeholder>
+                            </TableView>
+                        </VBox>
+                    </SplitPane>
+                </VBox>
+            </Tab>
+
+            <!-- ===================================== -->
+            <!-- ВКЛАДКА 2: ВСЕ ПРОЦЕДУРЫ             -->
+            <!-- ===================================== -->
+            <Tab text="Все процедуры">
+                <VBox spacing="12.0">
+                    <padding>
+                        <Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/>
+                    </padding>
+
+                    <!-- Панель поиска и расширенных фильтров процедур -->
+                    <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="toolbar-panel">
+                        <padding>
+                            <Insets top="8.0" right="12.0" bottom="8.0" left="12.0"/>
+                        </padding>
+                        <TextField fx:id="procedureSearchField" promptText="Поиск по процедуре, пациенту..." prefWidth="220.0" styleClass="search-field"/>
+
+                        <Separator orientation="VERTICAL"/>
+
+                        <Label text="Статус:" styleClass="filter-label"/>
+                        <ComboBox fx:id="statusFilterComboBox" prefWidth="150.0" styleClass="filter-combo"/>
+
+                        <Label text="Период с:" styleClass="filter-label"/>
+                        <DatePicker fx:id="dateFromPicker" promptText="С даты" prefWidth="125.0" styleClass="filter-date"/>
+                        <Label text="по:" styleClass="filter-label"/>
+                        <DatePicker fx:id="dateToPicker" promptText="По дату" prefWidth="125.0" styleClass="filter-date"/>
+
+                        <Button text="Применить" onAction="#handleApplyProcedureFilter" styleClass="btn-filter"/>
+                        <Button text="Сброс" onAction="#handleResetProcedureFilters" styleClass="btn-filter-reset"/>
+
+                        <Region HBox.hgrow="ALWAYS"/>
+
+                        <Button text="+ Назначить" onAction="#handleAddProcedure" styleClass="btn-primary"/>
+                        <Button text="Редактировать" onAction="#handleEditProcedure" styleClass="btn-secondary"/>
+                        <Button text="Удалить" onAction="#handleDeleteProcedure" styleClass="btn-danger"/>
+                        <Button text="Экспорт CSV" onAction="#handleExportProceduresCsv" styleClass="btn-export"/>
+                    </HBox>
+
+                    <!-- Таблица всех процедур -->
+                    <TableView fx:id="procedureTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+                        <columns>
+                            <TableColumn fx:id="procIdColumn" text="ID" prefWidth="55.0"/>
+                            <TableColumn fx:id="procPatientColumn" text="Пациент" prefWidth="180.0"/>
+                            <TableColumn fx:id="procNameColumn" text="Название процедуры" prefWidth="240.0"/>
+                            <TableColumn fx:id="procDateColumn" text="Дата проведения" prefWidth="130.0"/>
+                            <TableColumn fx:id="procStatusColumn" text="Статус" prefWidth="140.0"/>
+                            <TableColumn fx:id="procDescColumn" text="Описание и указания" prefWidth="300.0"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Нет процедур, соответствующих выбранным критериям поиска и фильтрации."/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+            </Tab>
+
+            <!-- ===================================== -->
+            <!-- ВКЛАДКА 3: СТАТИСТИКА И АНАЛИТИКА    -->
+            <!-- ===================================== -->
+            <Tab text="Статистика и аналитика">
+                <ScrollPane fitToWidth="true" styleClass="statistics-scroll">
+                    <VBox spacing="18.0">
+                        <padding>
+                            <Insets top="16.0" right="20.0" bottom="20.0" left="20.0"/>
+                        </padding>
+
+                        <HBox alignment="CENTER_LEFT">
+                            <VBox spacing="2.0">
+                                <Label text="Сводные статистические показатели реабилитационного центра" styleClass="analytics-title"/>
+                                <Label text="Автоматический расчет ключевых метрик эффективности и загрузки процедурных кабинетов" styleClass="analytics-subtitle"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Пересчитать статистику" onAction="#refreshStatistics" styleClass="btn-primary"/>
+                        </HBox>
+
+                        <!-- Карточки ключевых показателей (KPI Cards) -->
+                        <GridPane hgap="16.0" vgap="16.0">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="33.3"/>
+                                <ColumnConstraints percentWidth="33.3"/>
+                                <ColumnConstraints percentWidth="33.4"/>
+                            </columnConstraints>
+
+                            <!-- Показатель 1: Всего пациентов -->
+                            <VBox GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="kpi-card, kpi-card-blue">
+                                <Label text="Пациентов в базе" styleClass="kpi-title"/>
+                                <Label fx:id="totalPatientsValueLabel" text="0" styleClass="kpi-value"/>
+                                <Label text="Зарегистрированные клиенты центра" styleClass="kpi-hint"/>
+                            </VBox>
+
+                            <!-- Показатель 2: Всего процедур -->
+                            <VBox GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="kpi-card, kpi-card-teal">
+                                <Label text="Всего назначений" styleClass="kpi-title"/>
+                                <Label fx:id="totalProceduresValueLabel" text="0" styleClass="kpi-value"/>
+                                <Label text="Суммарное количество процедур" styleClass="kpi-hint"/>
+                            </VBox>
+
+                            <!-- Показатель 3: Доля завершенных процедур -->
+                            <VBox GridPane.rowIndex="0" GridPane.columnIndex="2" styleClass="kpi-card, kpi-card-green">
+                                <Label text="Завершено процедур" styleClass="kpi-title"/>
+                                <Label fx:id="completionRateValueLabel" text="0%" styleClass="kpi-value"/>
+                                <Label text="Доля успешно пройденных курсов" styleClass="kpi-hint"/>
+                            </VBox>
+
+                            <!-- Показатель 4: Средний возраст -->
+                            <VBox GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="kpi-card, kpi-card-orange">
+                                <Label text="Средний возраст" styleClass="kpi-title"/>
+                                <Label fx:id="avgAgeValueLabel" text="0 лет" styleClass="kpi-value"/>
+                                <Label text="Возрастной диапазон пациентов" styleClass="kpi-hint"/>
+                            </VBox>
+
+                            <!-- Показатель 5: Процедур в этом месяце -->
+                            <VBox GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="kpi-card, kpi-card-purple">
+                                <Label text="В текущем месяце" styleClass="kpi-title"/>
+                                <Label fx:id="monthProceduresValueLabel" text="0" styleClass="kpi-value"/>
+                                <Label text="Процедур запланировано/проведено" styleClass="kpi-hint"/>
+                            </VBox>
+
+                            <!-- Показатель 6: Среднее процедур на пациента -->
+                            <VBox GridPane.rowIndex="1" GridPane.columnIndex="2" styleClass="kpi-card, kpi-card-indigo">
+                                <Label text="Процедур на 1 пациента" styleClass="kpi-title"/>
+                                <Label fx:id="avgProceduresPerPatientLabel" text="0.0" styleClass="kpi-value"/>
+                                <Label text="Средняя плотность курса реабилитации" styleClass="kpi-hint"/>
+                            </VBox>
+                        </GridPane>
+
+                        <!-- Графики и визуализация -->
+                        <HBox spacing="16.0" prefHeight="350.0">
+                            <!-- Круговая диаграмма: Процедуры по статусам -->
+                            <VBox HBox.hgrow="ALWAYS" styleClass="chart-container">
+                                <Label text="Распределение процедур по статусам" styleClass="chart-title"/>
+                                <PieChart fx:id="statusPieChart" legendSide="BOTTOM" VBox.vgrow="ALWAYS"/>
+                            </VBox>
+
+                            <!-- Столбчатая диаграмма: Пациенты по возрастным группам -->
+                            <VBox HBox.hgrow="ALWAYS" styleClass="chart-container">
+                                <Label text="Возрастные группы пациентов" styleClass="chart-title"/>
+                                <BarChart fx:id="ageBarChart" legendVisible="false" VBox.vgrow="ALWAYS">
+                                    <xAxis>
+                                        <CategoryAxis label="Возрастная группа"/>
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis label="Количество человек"/>
+                                    </yAxis>
+                                </BarChart>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+    <!-- Нижний колонтитул: Статус-бар -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="status-bar">
+            <padding>
+                <Insets top="6.0" right="16.0" bottom="6.0" left="16.0"/>
+            </padding>
+            <Label fx:id="dbStatusLabel" text="Проверка подключения к БД..." styleClass="status-db-label"/>
+            <Separator orientation="VERTICAL"/>
+            <Label fx:id="totalRecordsLabel" text="Пациентов: 0 | Процедур: 0" styleClass="status-count-label"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="КР №2 • PostgreSQL JDBC + JavaFX" styleClass="status-info-label"/>
+        </HBox>
+    </bottom>
+</BorderPane>
+

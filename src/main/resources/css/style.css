@@ -1,0 +1,350 @@
+/* Общие стили приложения Реабилитационного центра */
+.root {
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f4f6f9;
+}
+
+/* Верхняя панель (Header Banner) */
+.top-banner {
+    -fx-background-color: linear-gradient(to right, #0a3d62, #1e5f74);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 6, 0, 0, 2);
+}
+
+.app-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.app-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #b0d4e3;
+}
+
+/* Вкладки (TabPane) */
+.custom-tab-pane {
+    -fx-background-color: transparent;
+}
+
+.custom-tab-pane .tab-header-area {
+    -fx-background-color: #e9ecef;
+    -fx-padding: 4px 16px 0px 16px;
+}
+
+.custom-tab-pane .tab {
+    -fx-background-color: #dee2e6;
+    -fx-background-radius: 6px 6px 0 0;
+    -fx-padding: 8px 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+}
+
+.custom-tab-pane .tab:selected {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #0a3d62;
+    -fx-focus-color: transparent;
+}
+
+/* Панель инструментов (Toolbar) */
+.toolbar-panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8px;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.03), 4, 0, 0, 1);
+}
+
+.filter-label {
+    -fx-text-fill: #495057;
+    -fx-font-weight: 600;
+}
+
+.section-header {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.related-header {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0a3d62;
+}
+
+/* Кнопки (Buttons) */
+.button {
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-padding: 6px 14px;
+}
+
+.btn-primary {
+    -fx-background-color: #0288d1;
+    -fx-text-fill: #ffffff;
+}
+.btn-primary:hover {
+    -fx-background-color: #0277bd;
+}
+
+.btn-small-primary {
+    -fx-background-color: #0288d1;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 11px;
+    -fx-padding: 4px 10px;
+}
+.btn-small-primary:hover {
+    -fx-background-color: #0277bd;
+}
+
+.btn-secondary {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: #ffffff;
+}
+.btn-secondary:hover {
+    -fx-background-color: #5a6268;
+}
+
+.btn-danger {
+    -fx-background-color: #dc3545;
+    -fx-text-fill: #ffffff;
+}
+.btn-danger:hover {
+    -fx-background-color: #bd2130;
+}
+
+.btn-success {
+    -fx-background-color: #28a745;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+}
+.btn-success:hover {
+    -fx-background-color: #218838;
+}
+
+.btn-export {
+    -fx-background-color: #17a2b8;
+    -fx-text-fill: #ffffff;
+}
+.btn-export:hover {
+    -fx-background-color: #138496;
+}
+
+.btn-outline {
+    -fx-background-color: transparent;
+    -fx-border-color: #ffffff;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+}
+.btn-outline:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-filter {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 5px 12px;
+}
+.btn-filter:hover {
+    -fx-background-color: #2c3e50;
+}
+
+.btn-filter-reset {
+    -fx-background-color: #e9ecef;
+    -fx-text-fill: #495057;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 6px;
+    -fx-padding: 5px 12px;
+}
+.btn-filter-reset:hover {
+    -fx-background-color: #dde2e6;
+}
+
+/* Поля ввода (Inputs) */
+.text-field, .combo-box, .date-picker {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 5px 8px;
+}
+
+.text-field:focused, .combo-box:focused, .date-picker:focused {
+    -fx-border-color: #0288d1;
+    -fx-effect: dropshadow(three-pass-box, rgba(2, 136, 209, 0.25), 4, 0, 0, 0);
+}
+
+.search-field {
+    -fx-font-size: 12px;
+}
+
+.small-input {
+    -fx-alignment: center;
+}
+
+/* Таблицы (TableView) */
+.data-table {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.data-table .column-header-background {
+    -fx-background-color: #f1f4f8;
+}
+
+.data-table .column-header {
+    -fx-background-color: transparent;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 8px 10px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 1px 1px 0;
+}
+
+.data-table .table-row-cell {
+    -fx-padding: 4px 6px;
+    -fx-border-color: #f1f4f8;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.data-table .table-row-cell:odd {
+    -fx-background-color: #fafbfc;
+}
+
+.data-table .table-row-cell:selected {
+    -fx-background-color: #e1f0fa;
+    -fx-text-fill: #0a3d62;
+}
+
+/* SplitPane */
+.content-split-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.content-split-pane *.split-pane-divider {
+    -fx-padding: 3px;
+    -fx-background-color: #d0d7de;
+}
+
+/* Аналитика и KPI карточки */
+.statistics-scroll {
+    -fx-background-color: transparent;
+    -fx-fit-to-width: true;
+}
+
+.analytics-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0a3d62;
+}
+
+.analytics-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6c757d;
+}
+
+.kpi-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 16px 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.06), 8, 0, 0, 2);
+}
+
+.kpi-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #555555;
+}
+
+.kpi-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 0;
+}
+
+.kpi-hint {
+    -fx-font-size: 11px;
+    -fx-text-fill: #888888;
+}
+
+.kpi-card-blue .kpi-value { -fx-text-fill: #0288d1; }
+.kpi-card-teal .kpi-value { -fx-text-fill: #009688; }
+.kpi-card-green .kpi-value { -fx-text-fill: #2e7d32; }
+.kpi-card-orange .kpi-value { -fx-text-fill: #ef6c00; }
+.kpi-card-purple .kpi-value { -fx-text-fill: #6a1b9a; }
+.kpi-card-indigo .kpi-value { -fx-text-fill: #3949ab; }
+
+.chart-container {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #dee2e6;
+    -fx-padding: 14px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.04), 6, 0, 0, 2);
+}
+
+.chart-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 8px 6px;
+}
+
+/* Диалоговые окна (Dialogs) */
+.dialog-root {
+    -fx-background-color: #ffffff;
+}
+
+.dialog-header {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0a3d62;
+}
+
+.dialog-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6c757d;
+}
+
+.form-label {
+    -fx-font-weight: 600;
+    -fx-text-fill: #34495e;
+}
+
+.form-input {
+    -fx-font-size: 13px;
+}
+
+.error-message {
+    -fx-text-fill: #d32f2f;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+/* Нижний статус-бар (Status Bar) */
+.status-bar {
+    -fx-background-color: #e9ecef;
+    -fx-border-color: #ced4da;
+    -fx-border-width: 1px 0 0 0;
+}
+
+.status-db-label {
+    -fx-font-size: 12px;
+}
+
+.status-count-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #495057;
+    -fx-font-weight: 600;
+}
+
+.status-info-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6c757d;
+}
+

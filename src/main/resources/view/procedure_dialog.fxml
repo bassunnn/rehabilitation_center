@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.mirea.project.controller.ProcedureEditDialogController"
+      spacing="16.0" prefWidth="520.0" styleClass="dialog-root">
+    <padding>
+        <Insets top="20.0" right="24.0" bottom="20.0" left="24.0"/>
+    </padding>
+
+    <Label text="Назначение процедуры" styleClass="dialog-header"/>
+    <Label text="Выберите пациента и укажите параметры реабилитационной процедуры" styleClass="dialog-subtitle"/>
+
+    <GridPane hgap="12.0" vgap="14.0">
+        <columnConstraints>
+            <ColumnConstraints minWidth="140.0" prefWidth="150.0"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <!-- Связанный пациент (ComboBox вместо ручного ввода ID) -->
+        <Label text="Пациент *:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="form-label"/>
+        <ComboBox fx:id="patientComboBox" promptText="Выберите пациента из списка..." maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="form-input"/>
+
+        <!-- Название процедуры -->
+        <Label text="Название процедуры *:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="form-label"/>
+        <TextField fx:id="nameField" promptText="например: Лечебная физкультура (ЛФК)" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="form-input"/>
+
+        <!-- Дата проведения -->
+        <Label text="Дата процедуры *:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="form-label"/>
+        <DatePicker fx:id="procedureDatePicker" promptText="дд.мм.гггг" maxWidth="Infinity" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="form-input"/>
+
+        <!-- Статус процедуры -->
+        <Label text="Статус *:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="form-label"/>
+        <ComboBox fx:id="statusComboBox" maxWidth="Infinity" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="form-input"/>
+
+        <!-- Описание / назначение -->
+        <Label text="Описание и указания:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="form-label" alignment="TOP_LEFT"/>
+        <TextArea fx:id="descriptionArea" promptText="Укажите рекомендации, частоту, интенсивность или зону воздействия" prefRowCount="4" wrapText="true" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="form-input"/>
+    </GridPane>
+
+    <!-- Сообщение об ошибке валидации -->
+    <Label fx:id="errorLabel" styleClass="error-message" wrapText="true"/>
+
+    <!-- Кнопки управления -->
+    <HBox spacing="12.0" alignment="CENTER_RIGHT">
+        <Button text="Отмена" onAction="#handleCancel" styleClass="btn-secondary"/>
+        <Button text="Сохранить" onAction="#handleSave" defaultButton="true" styleClass="btn-primary"/>
+    </HBox>
+</VBox>
+
