@@ -33,10 +33,32 @@ public class AuditService {
         this.metadata = metadata;
     }
 
+    public record AuditContext(UUID actorId, String actorEmail, String correlationId, String ipAddress, String userAgent) {
+        public static AuditContext empty() {
+            return new AuditContext(null, null, null, null, null);
+        }
+    }
+
+    public AuditContext captureContext() {
+        UserPrincipal principal = currentPrincipal();
+        return new AuditContext(
+                principal == null ? null : principal.id(),
+                principal == null ? null : principal.email(),
+                metadata.correlationId(),
+                metadata.ipAddress(),
+                metadata.userAgent());
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(String eventType, String entityType, UUID entityId,
                        String summary, Map<String, ?> safeDetails) {
-        UserPrincipal principal = currentPrincipal();
+        record(eventType, entityType, entityId, summary, safeDetails, captureContext());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void record(String eventType, String entityType, UUID entityId,
+                       String summary, Map<String, ?> safeDetails, AuditContext ctx) {
+        AuditContext effective = ctx == null ? AuditContext.empty() : ctx;
         String json = null;
         if (safeDetails != null && !safeDetails.isEmpty()) {
             try {
@@ -46,10 +68,10 @@ public class AuditService {
             }
         }
         events.save(new AuditEvent(UUID.randomUUID(),
-                principal == null ? null : principal.id(),
-                principal == null ? null : principal.email(),
+                effective.actorId(),
+                effective.actorEmail(),
                 eventType, entityType, entityId, summary,
-                metadata.correlationId(), metadata.ipAddress(), metadata.userAgent(),
+                effective.correlationId(), effective.ipAddress(), effective.userAgent(),
                 Instant.now(), json));
     }
 
