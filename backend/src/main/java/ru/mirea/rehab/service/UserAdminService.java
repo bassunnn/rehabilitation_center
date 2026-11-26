@@ -3,9 +3,9 @@ package ru.mirea.rehab.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.mirea.rehab.domain.Role;
 import ru.mirea.rehab.domain.UserAccount;
 import ru.mirea.rehab.dto.UserDtos.CreateUserRequest;
@@ -17,33 +17,39 @@ import ru.mirea.rehab.error.NotFoundException;
 import ru.mirea.rehab.repository.RefreshSessionRepository;
 import ru.mirea.rehab.repository.UserAccountRepository;
 import ru.mirea.rehab.security.CurrentUserService;
+import ru.mirea.rehab.security.PasswordHashingService;
 import ru.mirea.rehab.security.PasswordPolicy;
+import ru.mirea.rehab.service.AuditService.AuditContext;
 
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /** Административное управление пользователями без раскрытия хешей паролей. */
 @Service
 public class UserAdminService {
     private final UserAccountRepository users;
     private final RefreshSessionRepository sessions;
-    private final PasswordEncoder encoder;
+    private final PasswordHashingService passwordHashing;
     private final PasswordPolicy policy;
     private final CurrentUserService currentUser;
     private final AuditService audit;
+    private final TransactionTemplate transactionTemplate;
 
     public UserAdminService(UserAccountRepository users, RefreshSessionRepository sessions,
-                            PasswordEncoder encoder, PasswordPolicy policy,
-                            CurrentUserService currentUser, AuditService audit) {
+                            PasswordHashingService passwordHashing, PasswordPolicy policy,
+                            CurrentUserService currentUser, AuditService audit,
+                            TransactionTemplate transactionTemplate) {
         this.users = users;
         this.sessions = sessions;
-        this.encoder = encoder;
+        this.passwordHashing = passwordHashing;
         this.policy = policy;
         this.currentUser = currentUser;
         this.audit = audit;
+        this.transactionTemplate = transactionTemplate;
     }
 
     @Transactional(readOnly = true)
@@ -51,17 +57,26 @@ public class UserAdminService {
         return users.findAll(pageable).map(UserAdminService::toResponse);
     }
 
-    @Transactional
-    public UserResponse create(CreateUserRequest request) {
+    public CompletableFuture<UserResponse> create(CreateUserRequest request) {
         String email = normalizeEmail(request.email());
         if (users.existsByEmailIgnoreCase(email)) throw new ConflictException("Пользователь с таким email уже существует");
         policy.validate(request.temporaryPassword(), email);
-        UserAccount user = new UserAccount(UUID.randomUUID(), email, request.displayName().trim(),
-                encoder.encode(request.temporaryPassword()), normalizeRoles(request.roles()));
-        user.setPasswordChangeRequired(true);
-        users.save(user);
-        audit.record("USER_CREATED", "USER", user.getId(), "Создан пользователь " + email, Map.of("roles", user.getRoles()));
-        return toResponse(user);
+        Set<Role> roles = normalizeRoles(request.roles());
+        String displayName = request.displayName().trim();
+        AuditContext auditCtx = audit.captureContext();
+
+        return passwordHashing.encodeAsync(request.temporaryPassword())
+                .thenApply(encodedPassword -> transactionTemplate.execute(status -> {
+                    if (users.existsByEmailIgnoreCase(email)) {
+                        throw new ConflictException("Пользователь с таким email уже существует");
+                    }
+                    UserAccount user = new UserAccount(UUID.randomUUID(), email, displayName, encodedPassword, roles);
+                    user.setPasswordChangeRequired(true);
+                    users.save(user);
+                    audit.record("USER_CREATED", "USER", user.getId(), "Создан пользователь " + email,
+                            Map.of("roles", user.getRoles()), auditCtx);
+                    return toResponse(user);
+                }));
     }
 
     @Transactional
@@ -86,16 +101,21 @@ public class UserAdminService {
         return toResponse(user);
     }
 
-    @Transactional
-    public void resetPassword(UUID id, ResetPasswordRequest request) {
+    public CompletableFuture<Void> resetPassword(UUID id, ResetPasswordRequest request) {
         UserAccount user = require(id);
         policy.validate(request.temporaryPassword(), user.getEmail());
-        user.setPasswordHash(encoder.encode(request.temporaryPassword()));
-        user.setPasswordChangeRequired(true);
-        user.setFailedLoginAttempts(0);
-        user.setLockedUntil(null);
-        sessions.revokeAllForUser(id, Instant.now());
-        audit.record("USER_PASSWORD_RESET", "USER", id, "Администратор сбросил пароль пользователя", Map.of());
+        AuditContext auditCtx = audit.captureContext();
+
+        return passwordHashing.encodeAsync(request.temporaryPassword())
+                .thenAccept(encodedPassword -> transactionTemplate.executeWithoutResult(status -> {
+                    UserAccount managed = require(id);
+                    managed.setPasswordHash(encodedPassword);
+                    managed.setPasswordChangeRequired(true);
+                    managed.setFailedLoginAttempts(0);
+                    managed.setLockedUntil(null);
+                    sessions.revokeAllForUser(id, Instant.now());
+                    audit.record("USER_PASSWORD_RESET", "USER", id, "Администратор сбросил пароль пользователя", Map.of(), auditCtx);
+                }));
     }
 
     private UserAccount require(UUID id) {

@@ -24,6 +24,7 @@ import ru.mirea.rehab.service.AuthService;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
 
 /** REST endpoints аутентификации для web и native-клиентов. */
 @RestController
@@ -40,14 +41,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
-        AuthResponse issued = auth.login(request);
-        if (request.effectiveClientType() == ClientType.WEB) {
-            setRefreshCookie(response, issued.refreshToken(), issued.refreshExpiresAt());
-            syncSwaggerCookie(response, issued);
-            return withoutRefreshToken(issued);
-        }
-        return issued;
+    public CompletableFuture<ResponseEntity<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+        boolean web = request.effectiveClientType() == ClientType.WEB;
+        return auth.login(request).thenApply(issued -> {
+            if (!web) {
+                return ResponseEntity.ok(issued);
+            }
+            HttpHeaders headers = new HttpHeaders();
+            addRefreshCookie(headers, issued.refreshToken(), issued.refreshExpiresAt());
+            syncSwaggerCookie(headers, issued);
+            return ResponseEntity.ok().headers(headers).body(withoutRefreshToken(issued));
+        });
     }
 
     @PostMapping("/refresh")
@@ -81,19 +85,17 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-        auth.changePassword(request);
-        return ResponseEntity.noContent().build();
+    public CompletableFuture<ResponseEntity<Void>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        return auth.changePassword(request).thenApply(ignored -> ResponseEntity.noContent().build());
     }
 
     @PostMapping("/change-initial-password")
-    public ResponseEntity<Void> changeInitialPassword(
+    public CompletableFuture<ResponseEntity<Void>> changeInitialPassword(
             @Valid @RequestBody InitialPasswordChangeRequest request) {
-        auth.changeInitialPassword(request);
-        return ResponseEntity.noContent().build();
+        return auth.changeInitialPassword(request).thenApply(ignored -> ResponseEntity.noContent().build());
     }
 
-    private void setRefreshCookie(HttpServletResponse response, String value, Instant expiresAt) {
+    private void addRefreshCookie(HttpHeaders headers, String value, Instant expiresAt) {
         Duration maxAge = Duration.between(Instant.now(), expiresAt);
         ResponseCookie cookie = ResponseCookie.from(REFRESH_COOKIE, value)
                 .httpOnly(true)
@@ -102,7 +104,13 @@ public class AuthController {
                 .path("/api/auth")
                 .maxAge(maxAge.isNegative() ? Duration.ZERO : maxAge)
                 .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private void setRefreshCookie(HttpServletResponse response, String value, Instant expiresAt) {
+        HttpHeaders headers = new HttpHeaders();
+        addRefreshCookie(headers, value, expiresAt);
+        headers.getOrEmpty(HttpHeaders.SET_COOKIE).forEach(v -> response.addHeader(HttpHeaders.SET_COOKIE, v));
     }
 
     private void clearRefreshCookie(HttpServletResponse response) {
@@ -112,12 +120,12 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    private void syncSwaggerCookie(HttpServletResponse response, AuthResponse issued) {
+    private void syncSwaggerCookie(HttpHeaders headers, AuthResponse issued) {
         boolean admin = issued.user().roles().contains(Role.ADMIN);
         boolean permanentPassword = !issued.user().passwordChangeRequired();
 
         if (!admin || !permanentPassword) {
-            clearSwaggerCookie(response);
+            headers.add(HttpHeaders.SET_COOKIE, buildClearedSwaggerCookie().toString());
             return;
         }
 
@@ -131,19 +139,27 @@ public class AuthController {
                 .maxAge(maxAge.isNegative() ? Duration.ZERO : maxAge)
                 .build();
 
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        headers.add(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private void syncSwaggerCookie(HttpServletResponse response, AuthResponse issued) {
+        HttpHeaders headers = new HttpHeaders();
+        syncSwaggerCookie(headers, issued);
+        headers.getOrEmpty(HttpHeaders.SET_COOKIE).forEach(v -> response.addHeader(HttpHeaders.SET_COOKIE, v));
     }
 
     private void clearSwaggerCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(SWAGGER_COOKIE, "")
+        response.addHeader(HttpHeaders.SET_COOKIE, buildClearedSwaggerCookie().toString());
+    }
+
+    private ResponseCookie buildClearedSwaggerCookie() {
+        return ResponseCookie.from(SWAGGER_COOKIE, "")
                 .httpOnly(true)
                 .secure(properties.cookieSecure())
                 .sameSite("Strict")
                 .path("/")
                 .maxAge(Duration.ZERO)
                 .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     private static AuthResponse withoutRefreshToken(AuthResponse source) {

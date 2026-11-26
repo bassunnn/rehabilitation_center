@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,6 +26,7 @@ import ru.mirea.rehab.security.PasswordChangeRequiredFilter;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /** Центральная конфигурация HTTP-безопасности. */
 @Configuration
@@ -34,6 +36,20 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean(name = "passwordHashExecutor")
+    public Executor passwordHashExecutor() {
+        int threads = Math.max(2, Runtime.getRuntime().availableProcessors());
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(threads);
+        executor.setMaxPoolSize(threads);
+        executor.setQueueCapacity(256);
+        executor.setThreadNamePrefix("password-hash-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(10);
+        executor.initialize();
+        return executor;
     }
 
     @Bean

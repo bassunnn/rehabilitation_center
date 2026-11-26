@@ -21,6 +21,7 @@ import ru.mirea.rehab.service.UserAdminService;
 import ru.mirea.rehab.web.PageableFactory;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /** Административный REST-контур учетных записей. */
 @RestController
@@ -44,8 +45,8 @@ public class AdminUserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
-        return ResponseEntity.status(201).body(users.create(request));
+    public CompletableFuture<ResponseEntity<UserResponse>> create(@Valid @RequestBody CreateUserRequest request) {
+        return users.create(request).thenApply(created -> ResponseEntity.status(201).body(created));
     }
 
     @PutMapping("/{id}")
@@ -54,10 +55,9 @@ public class AdminUserController {
     }
 
     @PostMapping("/{id}/reset-password")
-    public ResponseEntity<Void> resetPassword(@PathVariable UUID id,
-                                              @Valid @RequestBody ResetPasswordRequest request) {
-        users.resetPassword(id, request);
-        return ResponseEntity.noContent().build();
+    public CompletableFuture<ResponseEntity<Void>> resetPassword(@PathVariable UUID id,
+                                                                 @Valid @RequestBody ResetPasswordRequest request) {
+        return users.resetPassword(id, request).thenApply(ignored -> ResponseEntity.noContent().build());
     }
 }
 
