@@ -29,14 +29,14 @@
 
 ## 🛠 Технологический стек
 
-- **Backend:** Java 21, Spring Boot 3.5.5 (Spring MVC, Spring Data JPA, Spring Security, Validation)
-- **База данных:** PostgreSQL 17 (драйвер JDBC 42.7.x, миграции Flyway)
-- **Безопасность:** Spring Security 6, JJWT 0.12.6, BCrypt, HttpOnly/SameSite Cookie, защита от подбора паролей (`LoginAttemptService`)
-- **Документация API:** Springdoc OpenAPI 2.8.9, Swagger UI
-- **CSV & Экспорт:** Apache Commons CSV 1.14.1 с защитой от Formula Injection (`=`, `+`, `-`, `@`, `\t`, `\r`)
-- **Frontend:** Современный компонентный Vanilla JS (SPA), HTML5 Dialog API, CSS Grid/Flexbox
-- **Тестирование:** JUnit 5, Spring Boot Test, H2 Database (in-memory для изолированных тестов)
-- **Контейнеризация:** Docker Compose, Dockerfile / официальный образ Maven + Temurin 21
+- **Backend:** Java 21, Spring Boot 3.5.5 (Spring MVC, Spring Data JPA, Spring Security, Validation).
+- **База данных:** PostgreSQL 17 (драйвер JDBC 42.7.x, миграции Flyway).
+- **Безопасность:** Spring Security 6, JJWT 0.12.6, BCrypt, HttpOnly/SameSite Cookie, защита от подбора паролей (`LoginAttemptService`).
+- **Документация API:** Springdoc OpenAPI 2.8.9, Swagger UI.
+- **CSV & Экспорт:** Apache Commons CSV 1.14.1 с защитой от Formula Injection (`=`, `+`, `-`, `@`, `\t`, `\r`).
+- **Frontend:** Современный компонентный Vanilla JS (SPA), HTML5 Dialog API, CSS Grid/Flexbox.
+- **Тестирование:** JUnit 5, Spring Boot Test, H2 Database (in-memory для изолированных тестов).
+- **Контейнеризация:** Docker Compose, Dockerfile / официальный образ Maven + Temurin 21.
 
 ---
 
